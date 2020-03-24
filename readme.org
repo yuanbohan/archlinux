@@ -1,0 +1,135 @@
+#+TITLE: Arch Linux Installation
+#+AUTHOR: Yuanbo Han
+#+EMAIL: yuanbo.han@gmail.com
+
+uEFI grub boot on NUC8i7HNK with NVMe SSD
+
+** Install Arch Linux
+
+*** 制作启动盘，更改电脑的加载顺序 U 盘在前面，插入 U盘 开机，通过启动盘进入 ~Arch Linux archiso x86_64 UEFI USB~
+
+*** 连接 wifi，设置时间
+
+- 检查是否支持 efi ~ls -la /sys/firmware/efi~
+- ~wifi-menu~
+- ~timedatectl set-ntp true~
+
+*** 分区，格式化，挂载
+
+**** 分区
+
+- ~lsblk -l~ ~fdisk -l~ 查看硬盘情况
+- ~cgdisk /dev/nvme0n1~ 分区
+  - 512M for /boot, 64G for /root, left for /home
+  - EFI 系统分区的类型是 `ef00`，其他分区默认类型
+
+**** 格式化
+
+- ~mkfs.vfat -F32 /dev/nvme0n1p0~ (EFI 512M)
+- ~mkfs.ext4 /dev/nvme0n1p1~ (/root 64G)
+- ~mkfs.ext4 /dev/nvme0n1p2~ (/home left)
+
+**** 挂载
+
+- ~mount /dev/nvme0n1p1 /mnt~
+- ~mkdir /mnt/boot~ ~mkdir /mnt/home~
+- ~mount /dev/nvme0n1p0 /mnt/boot~
+- ~mount /dev/nvme0n1p2 /mnt/home~
+
+*** 安装
+
+- 更改 ~/​etc/​pacman.d/​mirrorlist~ 把 China 的源提到最前面
+- 安装 ~pacstrap /mnt base base-devel linux linux-firmware~
+
+*** 设置
+
+- 生成 fstab ~genfstab -U /mnt >> /mnt/etc/fstab~
+- chroot ~arch-chroot /mnt~
+- 设置时区 ~ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime~ ~hwclock --systohc~
+- 设置 locale, 更改 ~/etc/locale.gen~ 将 ~en_US.UTF-8 UTF-8~ ~zh_CN.UTF-8 UTF-8~ 取消注释，执行 ~locale-gen~
+- 设置 hostname ~echo bobo > /etc/hostname~
+- 更改 ~/etc/hosts~
+
+#+BEGIN_SRC shell
+  127.0.0.1	localhost
+  ::1		localhost
+  127.0.1.1	myhostname.localdomain	myhostname
+#+END_SRC
+
+- 更改 root password ~passwd~
+- 配置引导程序
+  - ~pacman -S efibootmgr dosfstools grub intel-ucode~
+  - ~grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck~
+  - ~grub-mkconfig -o /boot/grub/grub.cfg~
+
+*** 其他
+
+- 安装一些必要软件
+
+  - ~pacman -S networkmanager openssh htop git tig tree tmux jq zip unzip ripgrep vim curl wget~
+  - ~pacman -S xdg-user-dirs chromium firefox emacs xterm terminator flameshot feh rofi ranger~
+  - ~pacman -S jdk8-openjdk leiningen~
+
+- network
+  - ~nmcli device wifi list~
+  - ~nmcli device wifi connect {wifi-name} password {password}~
+  - ~sudo systemctl enable NetworkManager~
+
+- yay
+
+#+BEGIN_SRC shell
+  git clone https://aur.archlinux.org/yay.git
+  cd yay
+  makepkg -si
+#+END_SRC
+
+** Install Display Manager, Desktop Environment, Window Manager
+
+- xorg ~sudo pacman -S xorg~
+- i3 ~sudo pacman -S i3~ (i3-gaps, i3status, i3blocks, i3lock)
+- lightdm ~sudo pacman -S lightdm lightdm-gtk-greeter~
+  - ~sudo systemctl enable lightdm~
+
+** Chinese Input
+
+- ~pacman -Syu fcitx fcitx-googlepinyin fcitx-im fcitx-configtool~, then run ~fcitx-config-gtk3~
+
+** Sound
+
+*** [[https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)][alsa]]
+
+- ~sudo pacman -S alsa-utils alsa-firmware alsa-tools~
+- ~alsamixer~
+
+*** pulseaudio
+
+- ~sudo pacman -S pulseaudio pavucontrol~
+- ~yay pulseaudio-ctl~
+- ~pulseaudio --start/--kill~ // start/stop pulseaudio
+- ~pulseaudio-ctl~            // control in command line
+- ~pavucontrol~               // select sink device
+- ~pactl --help~              // control in command line
+
+
+*** bluetooth
+
+- ~sudo pacman -S pulseaudio-alsa pulseaudio-bluetooth bluez bluez-libs bluez-utils~
+- ~yay bluez-firmware~
+- ~sudo systemctl start/enable bluetooth~
+- ~sudo bluetoothctl~  // connect bluetooth in command line
+
+** Chinese Font
+
+- ~sudo pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji~
+- place [[https://github.com/yuanbohan/dot-files/blob/master/fontconfig/fonts.conf][fonts.conf]] to ~/home/{user}/.config/fontconfig/fonts.conf~
+
+** Reference
+
+- [[https://wiki.archlinux.org/index.php/Installation_guide][archlinux wiki installation guide]]
+- [[https://blog.yoitsu.moe/arch-linux/installing_arch_linux_for_complete_newbies.html][给 GNU/Linux 萌新的 Arch Linux 安装指南]]
+- [[https://www.jianshu.com/p/7c78dc4c53e5][Arch Linux 安装指南]]
+- [[https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-1-5ef9751a0be][ArchLinux Tutorial, Part 1: Basic ArchLinux Installation]]
+- [[https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-2-x-window-system-and-i3-installation-86735e55a0a0][ArchLinux Tutorial, Part 2: X Window System and I3 Installation]]
+- [[https://medium.com/@mudrii/archlinux-tutorial-part-3-i3-configuration-and-operation-9cd6dc90e524][ArchLinux Tutorial, Part 3: I3 Configuration and Operation]]
+- [[https://github.com/ohmyarch/fontconfig-zh-cn][fontconfig]]
+- [[https://github.com/yuanbohan/dot-files][dot-files]]
