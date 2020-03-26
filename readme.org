@@ -6,6 +6,17 @@
 - uEFI grub boot on NUC8i7HNK with NVMe SSD
 - lightdm, i3wm, terminator, fish, tmux, emacs
 
+** Table of Contents                                                    :TOC:
+  - [[#install-arch-linux][Install Arch Linux]]
+  - [[#install-display-manager-desktop-environment-window-manager][Install Display Manager, Desktop Environment, Window Manager]]
+  - [[#chinese-input][Chinese Input]]
+  - [[#sound][Sound]]
+  - [[#font][Font]]
+  - [[#softwares][Softwares]]
+  - [[#pacman-cheat-sheet][pacman cheat sheet]]
+  - [[#reference][Reference]]
+  - [[#config-and-screenshot][Config and Screenshot]]
+
 ** Install Arch Linux
 
 *** 开始
@@ -85,7 +96,7 @@
 
 - xorg ~sudo pacman -S xorg~
 - i3 ~sudo pacman -S i3~ (i3-gaps, i3status, i3blocks, i3lock)
-  - ~pacman -S xterm~ (i3 需要)
+  - ~pacman -S terminator~ (i3 需要, 参考 [[https://wiki.archlinux.org/index.php/I3_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)#%25E8%2599%259A%25E6%258B%259F%25E7%25BB%2588%25E7%25AB%25AF][虚拟终端]], 我个人暂时用 terminator)
 - lightdm ~sudo pacman -S lightdm lightdm-gtk-greeter~
   - ~sudo systemctl enable lightdm~
 
@@ -168,8 +179,10 @@
 - [[https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-2-x-window-system-and-i3-installation-86735e55a0a0][ArchLinux Tutorial, Part 2: X Window System and I3 Installation]]
 - [[https://medium.com/@mudrii/archlinux-tutorial-part-3-i3-configuration-and-operation-9cd6dc90e524][ArchLinux Tutorial, Part 3: I3 Configuration and Operation]]
 - [[https://github.com/ohmyarch/fontconfig-zh-cn][fontconfig]]
-- [[https://github.com/yuanbohan/dot-files][dot-files]]
-** screenshot
+
+** Config and Screenshot
+
+[[https://github.com/yuanbohan/dot-files][my personal dot-files]]
 
 #+caption: caption of the image
 [[file:https://github.com/yuanbohan/dot-files/blob/master/screenshot.png]]
