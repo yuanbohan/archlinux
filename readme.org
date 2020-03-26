@@ -1,14 +1,20 @@
 #+TITLE: Arch Linux Installation
 #+AUTHOR: Yuanbo Han
 #+EMAIL: yuanbo.han@gmail.com
+#+OPTIONS: toc:2
 
-uEFI grub boot on NUC8i7HNK with NVMe SSD
+- uEFI grub boot on NUC8i7HNK with NVMe SSD
+- lightdm, i3wm, terminator, fish, tmux, emacs
 
 ** Install Arch Linux
 
-*** 制作启动盘，更改电脑的加载顺序 U 盘在前面，插入 U盘 开机，通过启动盘进入 ~Arch Linux archiso x86_64 UEFI USB~
+*** 开始
 
-*** 连接 wifi，设置时间
+- 使用 iso 文件制作启动盘
+- 更改电脑的加载顺序 U 盘在前面
+- 插入 U盘 开机，通过启动盘进入 ~Arch Linux archiso x86_64 UEFI USB~
+
+*** wifi, time
 
 - 检查是否支持 efi ~ls -la /sys/firmware/efi~
 - ~wifi-menu~
@@ -47,14 +53,14 @@ uEFI grub boot on NUC8i7HNK with NVMe SSD
 - chroot ~arch-chroot /mnt~
 - 设置时区 ~ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime~ ~hwclock --systohc~
 - 设置 locale, 更改 ~/etc/locale.gen~ 将 ~en_US.UTF-8 UTF-8~ ~zh_CN.UTF-8 UTF-8~ 取消注释，执行 ~locale-gen~
-- 设置 hostname ~echo bobo > /etc/hostname~
+- 设置 hostname ~echo {myhostname} > /etc/hostname~
 - 更改 ~/etc/hosts~
 
-#+BEGIN_SRC shell
-  127.0.0.1	localhost
-  ::1		localhost
-  127.0.1.1	myhostname.localdomain	myhostname
-#+END_SRC
+    #+BEGIN_SRC shell
+      127.0.0.1	localhost
+      ::1       localhost
+      127.0.1.1	{myhostname}.localdomain {myhostname}
+    #+END_SRC
 
 - 更改 root password ~passwd~
 - 配置引导程序
@@ -62,31 +68,24 @@ uEFI grub boot on NUC8i7HNK with NVMe SSD
   - ~grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck~
   - ~grub-mkconfig -o /boot/grub/grub.cfg~
 
-*** 其他
+*** 增加用户
 
-- 安装一些必要软件
+- ~useradd -m -G wheel {user}~
+- ~passwd {user}~
+- ~visudo~
 
-  - ~pacman -S networkmanager openssh htop git tig tree tmux jq zip unzip ripgrep vim curl wget~
-  - ~pacman -S xdg-user-dirs chromium firefox emacs xterm terminator flameshot feh rofi ranger~
-  - ~pacman -S jdk8-openjdk leiningen~
+*** 网络
 
-- network
-  - ~nmcli device wifi list~
-  - ~nmcli device wifi connect {wifi-name} password {password}~
-  - ~sudo systemctl enable NetworkManager~
-
-- yay
-
-#+BEGIN_SRC shell
-  git clone https://aur.archlinux.org/yay.git
-  cd yay
-  makepkg -si
-#+END_SRC
+- ~pacman -S networkmanager~
+- ~nmcli device wifi list~
+- ~nmcli device wifi connect {wifi-name} password {password}~
+- ~sudo systemctl enable NetworkManager~
 
 ** Install Display Manager, Desktop Environment, Window Manager
 
 - xorg ~sudo pacman -S xorg~
 - i3 ~sudo pacman -S i3~ (i3-gaps, i3status, i3blocks, i3lock)
+  - ~pacman -S xterm~ (i3 需要)
 - lightdm ~sudo pacman -S lightdm lightdm-gtk-greeter~
   - ~sudo systemctl enable lightdm~
 
@@ -118,10 +117,47 @@ uEFI grub boot on NUC8i7HNK with NVMe SSD
 - ~sudo systemctl start/enable bluetooth~
 - ~sudo bluetoothctl~  // connect bluetooth in command line
 
-** Chinese Font
+** Font
 
-- ~sudo pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji~
+- ~sudo pacman -S powerline-fonts noto-fonts noto-fonts-cjk noto-fonts-emoji~
 - place [[https://github.com/yuanbohan/dot-files/blob/master/fontconfig/fonts.conf][fonts.conf]] to ~/home/{user}/.config/fontconfig/fonts.conf~
+
+** Softwares
+
+*** system
+
+- [[https://github.com/Jguer/yay][yay]]
+- ~pacman -S xdg-user-dirs chromium firefox vlc flameshot~
+- ~pacman -S openssh xclip git tree inetutils lsof zip unzip ripgrep curl wget~
+- ~pacman -S htop tig cowsay cmatrix sl tldr jq ripgrep neofetch httpie~
+
+*** terminal, shell, coding
+
+- ~pacman -S terminator fish tmux docker emacs code vim neovim~
+- ~pacman -S feh rofi ranger fzf compton~
+
+*** pdf
+
+- ~pacman -S zathura zathura-pdf-poppler~
+- [[https://github.com/politza/pdf-tools][pdf-tools]] is another solution if you use Emacs
+
+*** programming language
+
+- ~pacman -S jdk8-openjdk leiningen clojure~
+- ~pacman -S elixir~
+- [[https://www.rust-lang.org/tools/install][rust-install]]
+
+** pacman cheat sheet
+
+- ~pacman -Syu~ // update system
+- ~pacman -Syy~ // update database
+- ~pacman -S package_name~ // install online
+- ~pacman -Ss package_name~ // search online
+- ~pacman -U /path/to/the/package~ //// install offline
+- ~pacman -R~ or ~pacman -Rs~ // remove software
+- ~pacman -Qs package_name~ // search local
+- ~pacman -Qe~ // list all installed softwares
+- ~pacman -Qm~ // List Installed Packages that are not in the Official Repositories
 
 ** Reference
 
@@ -133,3 +169,7 @@ uEFI grub boot on NUC8i7HNK with NVMe SSD
 - [[https://medium.com/@mudrii/archlinux-tutorial-part-3-i3-configuration-and-operation-9cd6dc90e524][ArchLinux Tutorial, Part 3: I3 Configuration and Operation]]
 - [[https://github.com/ohmyarch/fontconfig-zh-cn][fontconfig]]
 - [[https://github.com/yuanbohan/dot-files][dot-files]]
+** screenshot
+
+#+caption: caption of the image
+[[file:https://github.com/yuanbohan/dot-files/blob/master/screenshot.png]]
