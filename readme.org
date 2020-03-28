@@ -1,4 +1,4 @@
-#+TITLE: Arch Linux Installation
+#+TITLE: Arch Linux Installation & Configuration
 #+AUTHOR: Yuanbo Han
 #+EMAIL: yuanbo.han@gmail.com
 #+OPTIONS: toc:2
@@ -7,8 +7,8 @@
 - lightdm, i3wm, terminator, fish, tmux, emacs
 
 ** Table of Contents                                                    :TOC:
-  - [[#install-arch-linux][Install Arch Linux]]
-  - [[#install-display-manager-desktop-environment-window-manager][Install Display Manager, Desktop Environment, Window Manager]]
+  - [[#arch-linux][Arch Linux]]
+  - [[#display-manager-desktop-environment-window-manager][Display Manager, Desktop Environment, Window Manager]]
   - [[#chinese-input][Chinese Input]]
   - [[#sound][Sound]]
   - [[#font][Font]]
@@ -17,7 +17,7 @@
   - [[#reference][Reference]]
   - [[#config-and-screenshot][Config and Screenshot]]
 
-** Install Arch Linux
+** Arch Linux
 
 *** 开始
 
@@ -92,7 +92,7 @@
 - ~nmcli device wifi connect {wifi-name} password {password}~
 - ~sudo systemctl enable NetworkManager~
 
-** Install Display Manager, Desktop Environment, Window Manager
+** Display Manager, Desktop Environment, Window Manager
 
 - xorg ~sudo pacman -S xorg~
 - i3 ~sudo pacman -S i3~ (i3-gaps, i3status, i3blocks, i3lock)
@@ -102,7 +102,9 @@
 
 ** Chinese Input
 
-- ~pacman -Syu fcitx fcitx-googlepinyin fcitx-im fcitx-configtool~, then run ~fcitx-config-gtk3~
+- ~pacman -Syu fcitx fcitx-googlepinyin fcitx-im fcitx-configtool~
+- run ~fcitx-config-gtk3~ to config
+- 修改快捷键,默认跟 i3 冲突
 
 ** Sound
 
@@ -119,7 +121,6 @@
 - ~pulseaudio-ctl~            // control in command line
 - ~pavucontrol~               // select sink device
 - ~pactl --help~              // control in command line
-
 
 *** bluetooth
 
