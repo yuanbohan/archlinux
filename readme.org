@@ -103,8 +103,14 @@
 ** Chinese Input
 
 - ~pacman -Syu fcitx fcitx-googlepinyin fcitx-im fcitx-configtool~
-- run ~fcitx-config-gtk3~ to config
-- 修改快捷键,默认跟 i3 冲突
+- config ~.xinitrs~
+#+BEGIN_SRC shell
+  export GTK_IM_MODULE=fcitx
+  export QT_IM_MODULE=fcitx
+  export XMODIFIERS=@im=fcitx
+#+END_SRC
+- 关闭虚拟键盘 ~sudo vim /usr/share/fcitx/addon/fcitx-vk.conf~ ~Enable=False~
+- Emacs 中使用 fcitx [[https://github.com/yuanbohan/dot-files/blob/master/i3/config#L164][i3 config emacs using fcitx]]
 
 ** Sound
 
