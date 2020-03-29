@@ -12,6 +12,7 @@
   - [[#chinese-input][Chinese Input]]
   - [[#sound][Sound]]
   - [[#font][Font]]
+  - [[#xorg-keyboard-layout-config][Xorg Keyboard Layout Config]]
   - [[#softwares][Softwares]]
   - [[#pacman-cheat-sheet][pacman cheat sheet]]
   - [[#reference][Reference]]
@@ -134,11 +135,41 @@
 - ~yay bluez-firmware~
 - ~sudo systemctl start/enable bluetooth~
 - ~sudo bluetoothctl~  // connect bluetooth in command line
+  - [[https://unix.stackexchange.com/questions/508221/bluetooth-service-running-but-bluetoothctl-says-org-bluez-error-notready][power on]]
+  - [[https://wiki.archlinux.org/index.php/Bluetooth_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)][bluetooth wiki]]
 
 ** Font
 
 - ~sudo pacman -S powerline-fonts noto-fonts noto-fonts-cjk noto-fonts-emoji~
 - place [[https://github.com/yuanbohan/dot-files/blob/master/fontconfig/fonts.conf][fonts.conf]] to ~/home/{user}/.config/fontconfig/fonts.conf~
+
+** Xorg Keyboard Layout Config
+
+我使用的是 us, colemak 的键盘布局
+
+[[https://wiki.archlinux.org/index.php/Xorg/Keyboard_configuration][wiki]]
+
+- ~localectl set-x11-keymap us "" colemak~ // set x11 keymap
+- ~exec_always --no-startup-id setxkbmap us -variant colemak~ // in i3 config
+- x11 布局与 fcitx 中的插件冲突，在 fcitx-configtool 中， Addon -> Advanced 中，取消勾选 *X Keyboard Integration*
+
+其他参考命令：
+
+*** localectl
+
+- ~localectl help~ // check current status
+- ~localectl status~ // check current status
+- ~localectl list-x11-keymap-models~
+- ~localectl list-x11-keymap-layouts~
+- ~localectl list-x11-keymap-variants [layout]~
+- ~localectl list-x11-keymap-options~
+
+
+*** setxkbmap
+
+- ~setxkbmap --help~
+- ~setxkbmap -query~
+- ~setxkbmap -print -verbose 10~
 
 ** Softwares
 
