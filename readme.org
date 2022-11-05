@@ -3,6 +3,8 @@
 #+EMAIL: yuanbo.han@gmail.com
 #+OPTIONS: toc:2
 
+* Always refer to https://wiki.archlinux.org/title/Installation_guide step by step to enjoy your Arch life
+
 - uEFI grub boot on NUC8i7HNK with NVMe SSD
 - lightdm, i3wm, terminator, fish, tmux, emacs
 
