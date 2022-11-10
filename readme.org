@@ -1,204 +1,101 @@
-#+TITLE: Arch Linux Installation & Configuration
+#+TITLE: Arch Linux Post-installation
 #+AUTHOR: Yuanbo Han
 #+EMAIL: yuanbo.han@gmail.com
 #+OPTIONS: toc:2
 
-* Always refer to https://wiki.archlinux.org/title/Installation_guide step by step to enjoy your Arch life
+- https://wiki.archlinux.org/title/Installation_guide
+- https://wiki.archlinux.org/title/General_recommendations
+- https://github.com/yuanbohan/dot-files
 
-- uEFI grub boot on NUC8i7HNK with NVMe SSD
-- lightdm, i3wm, terminator, fish, tmux, emacs
+** Window Manager (i3wm)
 
-** Table of Contents                                                    :TOC:
-  - [[#arch-linux][Arch Linux]]
-  - [[#display-manager-desktop-environment-window-manager][Display Manager, Desktop Environment, Window Manager]]
-  - [[#chinese-input][Chinese Input]]
-  - [[#sound][Sound]]
-  - [[#font][Font]]
-  - [[#xorg-keyboard-layout-config][Xorg Keyboard Layout Config]]
-  - [[#softwares][Softwares]]
-  - [[#pacman-cheat-sheet][pacman cheat sheet]]
-  - [[#reference][Reference]]
-  - [[#config-and-screenshot][Config and Screenshot]]
+sudo pacman i3-gaps i3status i3blocks i3lock
 
-** Arch Linux
+** Network (netctl)
 
-*** 开始
+- sudo pacman -S netctl dhcpcd
+- systemctl start/enable netctl-auto@<interface>
 
-- 使用 iso 文件制作启动盘
-- 更改电脑的加载顺序 U 盘在前面
-- 插入 U盘 开机，通过启动盘进入 ~Arch Linux archiso x86_64 UEFI USB~
+- https://wiki.archlinux.org/title/netctl
+- https://man.archlinux.org/man/netctl-auto.1.en
 
-*** wifi, time
+place your profiles under /etc/netctl folder. The following two profiles are from my profiles
 
-- 检查是否支持 efi ~ls -la /sys/firmware/efi~
-- ~wifi-menu~
-- ~timedatectl set-ntp true~
+#+begin_src shell
+  ## this profile is for WPA Personal, or WPA-PSK, mostly used in home
+  Description='A simple WPA encrypted wireless connection'
+  Interface=<wifi-interface>
+  Connection=wireless
+  Security=wpa
+  IP=dhcp
+  ESSID='<your-wifi-ssid>'
+  Key='<your key>'
+  # Uncomment this if your ssid is hidden
+  # Hidden=yes
+  # Set a priority for automatic profile selection
+  Priority=10
+#+end_src
 
-*** 分区，格式化，挂载
+#+begin_src shell
+  Description='A wireless connection using a custom network block configuration'
+  Interface=<wifi-interface>
+  Connection=wireless
+  Security=wpa-configsection
+  ESSID=<your-wifi-ssid>
+  IP=dhcp
+  WPAConfigSection=(
+      'ssid="<your-wifi-ssid>"'
+      'identity="<your identity>"'
+      'password="<your password>"'
+      'priority=1'
+      'phase2="auth=MSCHAPV2"'
+      'key_mgmt=WPA-EAP'
+  )
+#+end_src
 
-**** 分区
+** Sound (pipewire)
 
-- ~lsblk -l~ ~fdisk -l~ 查看硬盘情况
-- ~cgdisk /dev/nvme0n1~ 分区
-  - 512M for /boot, 64G for /root, left for /home
-  - EFI 系统分区的类型是 `ef00`，其他分区默认类型
+sudo pacman -S pipewire pipewire-pulse pipewire-media-session
 
-**** 格式化
+** Bluetooth (bluez)
 
-- ~mkfs.vfat -F32 /dev/nvme0n1p0~ (EFI 512M)
-- ~mkfs.ext4 /dev/nvme0n1p1~ (/root 64G)
-- ~mkfs.ext4 /dev/nvme0n1p2~ (/home left)
-
-**** 挂载
-
-- ~mount /dev/nvme0n1p1 /mnt~
-- ~mkdir /mnt/boot~ ~mkdir /mnt/home~
-- ~mount /dev/nvme0n1p0 /mnt/boot~
-- ~mount /dev/nvme0n1p2 /mnt/home~
-
-*** 安装
-
-- 更改 ~/​etc/​pacman.d/​mirrorlist~ 把 China 的源提到最前面
-- 安装 ~pacstrap /mnt base base-devel linux linux-firmware~
-
-*** 设置
-
-- 生成 fstab ~genfstab -U /mnt >> /mnt/etc/fstab~
-- chroot ~arch-chroot /mnt~
-- 设置时区 ~ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime~ ~hwclock --systohc~
-- 设置 locale, 更改 ~/etc/locale.gen~ 将 ~en_US.UTF-8 UTF-8~ ~zh_CN.UTF-8 UTF-8~ 取消注释，执行 ~locale-gen~
-- 设置 hostname ~echo {myhostname} > /etc/hostname~
-- 更改 ~/etc/hosts~
-
-    #+BEGIN_SRC shell
-      127.0.0.1	localhost
-      ::1       localhost
-      127.0.1.1	{myhostname}.localdomain {myhostname}
-    #+END_SRC
-
-- 更改 root password ~passwd~
-- 配置引导程序
-  - ~pacman -S efibootmgr dosfstools grub intel-ucode~
-  - ~grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck~
-  - ~grub-mkconfig -o /boot/grub/grub.cfg~
-
-*** 增加用户
-
-- ~useradd -m -G wheel {user}~
-- ~passwd {user}~
-- ~visudo~
-
-*** 网络
-
-- ~pacman -S networkmanager~
-- ~nmcli device wifi list~
-- ~nmcli device wifi connect {wifi-name} password {password}~
-- ~sudo systemctl enable NetworkManager~
-
-** Display Manager, Desktop Environment, Window Manager
-
-- xorg ~sudo pacman -S xorg~
-- i3 ~sudo pacman -S i3~ (i3-gaps, i3status, i3blocks, i3lock)
-  - ~pacman -S terminator~ (i3 需要, 参考 [[https://wiki.archlinux.org/index.php/I3_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)#%25E8%2599%259A%25E6%258B%259F%25E7%25BB%2588%25E7%25AB%25AF][虚拟终端]], 我个人暂时用 terminator)
-- lightdm ~sudo pacman -S lightdm lightdm-gtk-greeter~
-  - ~sudo systemctl enable lightdm~
-
-** Chinese Input
-
-- ~pacman -Syu fcitx fcitx-googlepinyin fcitx-im fcitx-configtool~
-- config ~.xinitrs~
-#+BEGIN_SRC shell
-  export GTK_IM_MODULE=fcitx
-  export QT_IM_MODULE=fcitx
-  export XMODIFIERS=@im=fcitx
-#+END_SRC
-- 关闭虚拟键盘 ~sudo vim /usr/share/fcitx/addon/fcitx-vk.conf~ ~Enable=False~
-- Emacs 中使用 fcitx [[https://github.com/yuanbohan/dot-files/blob/master/i3/config#L164][i3 config emacs using fcitx]]
-
-** Sound
-
-*** [[https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)][alsa]]
-
-- ~sudo pacman -S alsa-utils alsa-firmware alsa-tools~
-- ~alsamixer~
-
-*** pulseaudio
-
-- ~sudo pacman -S pulseaudio pavucontrol~
-- ~yay pulseaudio-ctl~
-- ~pulseaudio --start/--kill~ // start/stop pulseaudio
-- ~pulseaudio-ctl~            // control in command line
-- ~pavucontrol~               // select sink device
-- ~pactl --help~              // control in command line
-
-*** bluetooth
-
-- ~sudo pacman -S pulseaudio-alsa pulseaudio-bluetooth bluez bluez-libs bluez-utils~
-- ~yay bluez-firmware~
-- ~sudo systemctl start/enable bluetooth~
-- ~sudo bluetoothctl~  // connect bluetooth in command line
-  - [[https://unix.stackexchange.com/questions/508221/bluetooth-service-running-but-bluetoothctl-says-org-bluez-error-notready][power on]]
-  - [[https://wiki.archlinux.org/index.php/Bluetooth_(%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587)][bluetooth wiki]]
-
-** Font
-
-- ~sudo pacman -S powerline-fonts noto-fonts noto-fonts-cjk noto-fonts-emoji~
-- place [[https://github.com/yuanbohan/dot-files/blob/master/fontconfig/fonts.conf][fonts.conf]] to ~/home/{user}/.config/fontconfig/fonts.conf~
+- sudo pacman -S bluez bluez-utils blueman
+- sudo systemctl start/enable bluetooth
+- blueman-manager // gui
 
 ** Xorg Keyboard Layout Config
 
-我使用的是 us, colemak 的键盘布局
+sodu pacman -S org-setxkbmap
 
-[[https://wiki.archlinux.org/index.php/Xorg/Keyboard_configuration][wiki]]
+- ad hoc
+  localectl set-x11-keymap us "" colemak
 
-- ~localectl set-x11-keymap us "" colemak~ // set x11 keymap
-- ~exec_always --no-startup-id setxkbmap us -variant colemak~ // in i3 config
-- x11 布局与 fcitx 中的插件冲突，在 fcitx-configtool 中， Addon -> Advanced 中，取消勾选 *X Keyboard Integration*
+- i3 config
+  exec_always --no-startup-id setxkbmap us -variant colemak -option ctrl:swapcaps
 
-其他参考命令：
+options in //usr/share/X11/xkb/rules/
 
-*** localectl
+** Shell & Terminal emulator
 
-- ~localectl help~ // check current status
-- ~localectl status~ // check current status
-- ~localectl list-x11-keymap-models~
-- ~localectl list-x11-keymap-layouts~
-- ~localectl list-x11-keymap-variants [layout]~
-- ~localectl list-x11-keymap-options~
+- zsh
+- alacritty
 
+** Editor
 
-*** setxkbmap
+Emacs
 
-- ~setxkbmap --help~
-- ~setxkbmap -query~
-- ~setxkbmap -print -verbose 10~
+** Screen Capture
+
+flameshot
 
 ** Softwares
 
-*** system
+- yay htop tig cowsay cmatrix sl
+- feh rofi ranger fzf picom
+- xdg-user-dirs firefox vlc docker code
+- openssh git tig htop tree inetutils lsof zip unzip ripgrep curl wget httpie tldr jq ripgrep neofetch httpie
 
-- [[https://github.com/Jguer/yay][yay]]
-- ~pacman -S xdg-user-dirs chromium firefox vlc flameshot~
-- ~pacman -S openssh xclip git tree inetutils lsof zip unzip ripgrep curl wget~
-- ~pacman -S htop tig cowsay cmatrix sl tldr jq ripgrep neofetch httpie~
-
-*** terminal, shell, coding
-
-- ~pacman -S terminator fish tmux docker emacs code vim neovim~
-- ~pacman -S feh rofi ranger fzf compton~
-
-*** pdf
-
-- ~pacman -S zathura zathura-pdf-poppler~
-- [[https://github.com/politza/pdf-tools][pdf-tools]] is another solution if you use Emacs
-
-*** programming language
-
-- ~pacman -S jdk8-openjdk leiningen clojure~
-- ~pacman -S elixir~
-- [[https://www.rust-lang.org/tools/install][rust-install]]
-
-** pacman cheat sheet
+** Pacman cheat sheet
 
 - ~pacman -Syu~ // update system
 - ~pacman -Syy~ // update database
@@ -210,17 +107,7 @@
 - ~pacman -Qe~ // list all installed softwares
 - ~pacman -Qm~ // List Installed Packages that are not in the Official Repositories
 
-** Reference
-
-- [[https://wiki.archlinux.org/index.php/Installation_guide][archlinux wiki installation guide]]
-- [[https://blog.yoitsu.moe/arch-linux/installing_arch_linux_for_complete_newbies.html][给 GNU/Linux 萌新的 Arch Linux 安装指南]]
-- [[https://www.jianshu.com/p/7c78dc4c53e5][Arch Linux 安装指南]]
-- [[https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-1-5ef9751a0be][ArchLinux Tutorial, Part 1: Basic ArchLinux Installation]]
-- [[https://medium.com/@mudrii/arch-linux-installation-on-hw-with-i3-windows-manager-part-2-x-window-system-and-i3-installation-86735e55a0a0][ArchLinux Tutorial, Part 2: X Window System and I3 Installation]]
-- [[https://medium.com/@mudrii/archlinux-tutorial-part-3-i3-configuration-and-operation-9cd6dc90e524][ArchLinux Tutorial, Part 3: I3 Configuration and Operation]]
-- [[https://github.com/ohmyarch/fontconfig-zh-cn][fontconfig]]
-
-** Config and Screenshot
+** Dot files and Screenshot
 
 [[https://github.com/yuanbohan/dot-files][my personal dot-files]]
 
