@@ -70,10 +70,10 @@ sodu pacman -S org-setxkbmap
 - ad hoc
   localectl set-x11-keymap us "" colemak
 
-- i3 config
-  exec_always --no-startup-id setxkbmap us -variant colemak -option ctrl:swapcaps
+- i3 config (colemak, swap ctrl with caps, left alt with left win)
+  exec_always --no-startup-id setxkbmap us -variant colemak -option "ctrl:swapcaps,altwin:swap_lalt_lwin"
 
-options in //usr/share/X11/xkb/rules/
+options in /usr/share/X11/xkb/rules/base.lst
 
 ** Shell & Terminal emulator
 
