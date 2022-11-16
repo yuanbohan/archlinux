@@ -84,6 +84,25 @@ options in /usr/share/X11/xkb/rules/base.lst
 
 Emacs
 
+** Input (Chinese)
+
+1. font
+   sudo pacman -S adobe-source-han-sans-cn-fonts adobe-source-han-sans-tw-fonts adobe-source-han-sans-hk-fonts adobe-source-han-serif-cn-fonts adobe-source-han-serif-tw-fonts adobe-source-han-serif-hk-fonts
+
+2. fcitx
+   sudo pacman -S fcitx fcitx-googlepinyin fcitx-im fcitx-configtool
+
+3. launch fcitx-configtool
+   - add Google pinyin (in Input Method)
+   - change your key to switch input method (I use Ctrl+Shift+Space)
+
+4. in xinitrc configuration
+   export GTK_IM_MODULE=fcitx
+   export QT_IM_MODULE=fcitx
+   export XMODIFIERS=@im=fcitx
+5. in i3
+   exec --no-startup-id fcitx
+
 ** Screen Capture
 
 flameshot
